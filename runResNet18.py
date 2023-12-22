@@ -6,7 +6,7 @@ from hyperParams import hyperParams
 import torch.optim as optim
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
-from tdqm import tdqm
+from tqdm import tqdm
 
 class runResNet18():
     def __init__(self):
@@ -16,7 +16,7 @@ class runResNet18():
         model.train()
         for epoch in range(hyperParams.epochs):
             lossLst = []
-            progress_bar = tdqm(enumerate(dataloader), total=len(dataloader), desc=f'Epoch {epoch + 1}', unit='batch')
+            progress_bar = tqdm(enumerate(dataloader), total=len(dataloader), desc=f'Epoch {epoch + 1}', unit='batch')
             for batch_idx, data in progress_bar:
                 image, target = data
                 image, target = image.to(hyperParams.device), target.to(hyperParams.device)

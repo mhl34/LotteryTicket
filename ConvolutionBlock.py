@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 class ConvolutionBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
+        super(ConvolutionBlock, self).__init__()
         # torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros', device=None, dtype=None)
         self.conv1 = nn.Conv2d(in_channels = in_channels, out_channels = out_channels, kernel_size = 3, stride = 2, padding = 1)
         self.batchnorm1 = nn.BatchNorm2d(out_channels)
