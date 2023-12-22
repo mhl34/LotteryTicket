@@ -20,9 +20,11 @@ class runResNet18():
             for batch_idx, data in progress_bar:
                 image, target = data
                 image, target = image.to(hyperParams.device), target.to(hyperParams.device)
-                preds = model(image)
+                outputs = model(image)
 
-                loss = criterion(preds, target)
+                preds = torch.argmax(outputs, dim = 1)
+
+                loss = criterion(outputs, target)
                 lossLst.append(loss.item())
 
                 optimizer.zero_grad()
@@ -36,16 +38,16 @@ class runResNet18():
         model = ResNet18()
         hp = hyperParams()
         model = model.to(hp.device)
-        optimizer = optim.SGD(model.parameters(), learning_rate = hp.learning_rate, momentum = hp.momentum, weight_decay = hp.weight_decay)
+        optimizer = optim.SGD(model.parameters(), lr = hp.learning_rate, momentum = hp.momentum, weight_decay = hp.weight_decay)
         criterion = nn.CrossEntropyLoss()
 
         # load data
         root = "./data"
-        transform = transforms.compose(
+        transform = transforms.Compose([
             transforms.Resize(224),
             transforms.RandomHorizontalFlip(0.5),
             transforms.ToTensor()
-        )
+        ])
         dataset = CIFAR10(root = root, train = True, download = True, transform = transform)
         train_dataset, val_dataset = torch.utils.data.random_split(dataset, [len(dataset) * 4 // 5, len(dataset) * 1 // 5])
         train_dataloader = DataLoader(train_dataset, batch_size = hp.batch_size, shuffle = True)

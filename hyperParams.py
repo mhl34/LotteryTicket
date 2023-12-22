@@ -1,3 +1,5 @@
+import torch
+
 class hyperParams:
     def __init__(self):
         self.epochs = 20

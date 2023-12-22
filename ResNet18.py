@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from ConvolutionBlock import ConvolutionBlock
 from IdentityBlock import IdentityBlock
 
@@ -27,6 +28,10 @@ class ResNet18(nn.Module):
             ConvolutionBlock(in_channels = 256, out_channels = 512),
             IdentityBlock(in_channels = 512, out_channels = 512)
         )
+        # self.avgpool1 = nn.AvgPool2d(kernel_size=(7,7), stride=(1,1))
+        self.fc1 = nn.Linear(in_features = 4*4*512, out_features = 1000)
+        self.fc2 = nn.Linear(in_features = 1000, out_features = 10)
+
 
     def forward(self, x):
         out = self.conv1(x)
@@ -34,4 +39,7 @@ class ResNet18(nn.Module):
         out = self.conv3(out)
         out = self.conv4(out)
         out = self.conv5(out)
+        out = out.reshape(out.shape[0], -1)
+        out = F.relu(self.fc1(out))
+        out = self.fc2(out)
         return out
