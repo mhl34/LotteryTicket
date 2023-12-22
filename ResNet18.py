@@ -3,9 +3,9 @@ import torch.nn as nn
 from ConvolutionBlock import ConvolutionBlock
 from IdentityBlock import IdentityBlock
 
-class ResNet_18(nn.Module):
+class ResNet18(nn.Module):
     def __init__(self):
-        super(ResNet_18, self).__init__()
+        super(ResNet18, self).__init__()
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels = 3, out_channels = 64, kernel_size = 7, stride = 2, padding = 3),
             nn.BatchNorm2d(64),
