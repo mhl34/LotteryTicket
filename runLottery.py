@@ -16,7 +16,7 @@ class Lottery():
         self.num_iterations = num_iterations
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    def train(self, model, dataloader, hyperparams, criterion, optimizer):
+    def train(self, model, masks, dataloader, hyperparams, criterion, optimizer):
         model.train()
         losses = []
         for epoch in range(hyperparams.epochs):
@@ -36,6 +36,8 @@ class Lottery():
                 loss.backward()
                 optimizer.step()
                 
+                self.applyMask(model, masks)
+                
                 batchLoss.append(loss.item())
             
             avgLoss = sum(batchLoss) / len(batchLoss)
@@ -44,12 +46,21 @@ class Lottery():
             
                 
     
-    def createMask(self, model, dropout_p):
+    def createMask(self, model, lastMasksDict, dropout_p):
         masks = {}
         for name, param in model.named_parameters():
-            if 'weight' in name and ('conv' in name or 'fc' in name):
-                threshold = param.data.flatten().quantile(dropout_p).item()
-                masks[name] = torch.where(param.data >= threshold, 1, 0)
+            if 'weight' in name and 'fc' in name:
+                lastMasks = lastMasksDict[name].to(self.device)
+                data = lastMasks * param.data
+                threshold = data.flatten().quantile(dropout_p).item()
+                masks[name] = torch.where(data > threshold, 1, 0)
+        return masks
+    
+    def createInitMask(self, model):
+        masks = {}
+        for name, param in model.named_parameters():
+            if 'weight' in name and 'fc' in name:
+                masks[name] = torch.ones_like(param.data)
         return masks
     
     def applyMask(self, model, masks):
@@ -97,18 +108,20 @@ class Lottery():
         
         trainLossDict = {}
         
+        masks = self.createInitMask(resnet_model)
+        
         for iteration in range(hp.num_iterations):
             print(f"Iteration: {iteration + 1}")
             # at each iteration, continue to dropout at P ^ (1/N) %
             if iteration != 0:
-                masks = self.createMask(resnet_model, hp.dropout_p ** (1/iteration))
+                masks = self.createMask(resnet_model, masks, hp.dropout_p ** (1/iteration))
                 resnet_model = ResNet18()
                 state_dict = torch.load("resnet_init.pth", map_location=torch.device('cuda'))['state_dict']
                 resnet_model.load_state_dict(state_dict)
                 resnet_model = resnet_model.to(self.device)
                 self.applyMask(resnet_model, masks)
             
-            trainLoss = self.train(resnet_model, train_dataloader, hp, criterion, optimizer)
+            trainLoss = self.train(resnet_model, masks, train_dataloader, hp, criterion, optimizer)
             trainLossDict[iteration] = trainLoss
             
             print(f"Loss: {min(trainLoss)}")
