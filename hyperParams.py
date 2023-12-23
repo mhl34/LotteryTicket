@@ -7,4 +7,5 @@ class hyperParams:
         self.momentum = 0.9
         self.weight_decay = 1e-5
         self.batch_size = 128
+        self.dropout_p = 0.3
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'

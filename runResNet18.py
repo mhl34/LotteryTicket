@@ -14,6 +14,7 @@ class runResNet18():
 
     def train(self, model, dataloader, hyperParams, optimizer, criterion):
         model.train()
+        bestLoss = float('inf')
         for epoch in range(hyperParams.epochs):
             lossLst = []
             progress_bar = tqdm(enumerate(dataloader), total=len(dataloader), desc=f'Epoch {epoch + 1}', unit='batch')
@@ -31,7 +32,16 @@ class runResNet18():
                 loss.backward()
                 optimizer.step()
 
-            print(f"Epoch {epoch + 1}   Average Training Loss: {sum(lossLst)/len(lossLst)}")
+            avgLoss = sum(lossLst)/len(lossLst)
+            print(f"Epoch {epoch + 1}   Average Training Loss: {avgLoss}")
+            if avgLoss < bestLoss:
+                print("Saving ...")
+                # Save the learned representation for downstream tasks
+                state = {'state_dict': model.state_dict(),
+                         'epoch': epoch,
+                         'lr': hyperParams.learning_rate}
+                torch.save(state, f'resnet_model.pth')
+                best_loss = avgLoss
 
 
     def run(self):
