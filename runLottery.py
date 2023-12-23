@@ -101,8 +101,8 @@ class Lottery():
             print(f"Iteration: {iteration + 1}")
             # at each iteration, continue to dropout at P ^ (1/N) %
             if iteration != 0:
-                masks = self.createMask(resnet_model, p.dropout_p ** (1/iteration))
-                self.applyMask(resnet_model, hp.dropout_p)
+                masks = self.createMask(resnet_model, hp.dropout_p ** (1/iteration))
+                self.applyMask(resnet_model, masks)
             
             trainLoss = self.train(resnet_model, train_dataloader, hp, criterion, optimizer)
             trainLossDict[iteration] = trainLoss
