@@ -48,8 +48,8 @@ class Lottery():
         masks = {}
         for name, param in model.named_parameters():
             if 'weight' in name and ('conv' in name or 'fc' in name):
-                threshold = param.data.quantile(dropout_p).item()
-                masks[name] = torch.where(param.data > threshold, 1, 0)
+                threshold = param.data.flatten().quantile(dropout_p).item()
+                masks[name] = torch.where(param.data >= threshold, 1, 0)
         return masks
     
     def applyMask(self, model, masks):
