@@ -102,6 +102,10 @@ class Lottery():
             # at each iteration, continue to dropout at P ^ (1/N) %
             if iteration != 0:
                 masks = self.createMask(resnet_model, hp.dropout_p ** (1/iteration))
+                resnet_model = ResNet18()
+                state_dict = torch.load("resnet_init.pth", map_location=torch.device('cuda'))['state_dict']
+                resnet_model.load_state_dict(state_dict)
+                resnet_model = resnet_model.to(self.device)
                 self.applyMask(resnet_model, masks)
             
             trainLoss = self.train(resnet_model, train_dataloader, hp, criterion, optimizer)
